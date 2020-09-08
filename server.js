@@ -14,10 +14,12 @@ createServer(async (req, res) => {
 			if (url === '/') {
 				res.setHeader('Content-Type', 'text/html');
 				res.end(await file);
-			} else if (state = url.match(/^[/]([xo_]{9})$/)) {
+			} else if (state = url.match(/^[/]([xo])[/]([xo_]{9})$/)) {
 				res.setHeader('Content-Type', 'text/plain');
+				const user = state[1], grid = [...state[2]];
 				
-			}
+				res.end(grid);
+			} else res.statusCode = 404;
 		} catch {
 			res.statusCode = 400;
 		}
