@@ -1,11 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Tic-Tac-Toe</title>
+	<style>
+		#board {
+			height: 500px;
+		}
+		#board line {
+			stroke: black;
+		}
+		#board rect {
+			width: 10px;
+			height: 10px;
+			fill: transparent;
+		}
+		#board rect:hover {
+			fill: green;
+			cursor: pointer;
+		}
+		#board rect:active {
+			fill: darkgreen;
+		}
+	</style>
 </head>
+
 <body>
-	
+	<svg id="board" viewBox="0 0 30 30">
+		<rect x="0"  y="0"/>
+		<rect x="10" y="0"/>
+		<rect x="20" y="0"/>
+		<rect x="0"  y="10"/>
+		<rect x="10" y="10"/>
+		<rect x="20" y="10"/>
+		<rect x="0"  y="20"/>
+		<rect x="10" y="20"/>
+		<rect x="20" y="20"/>
+		<line x1="10" y1="0" x2="10" y2="30"/>
+		<line x1="20" y1="0" x2="20" y2="30"/>
+		<line x1="0" y1="10" x2="30" y2="10"/>
+		<line x1="0" y1="20" x2="30" y2="20"/>
+	</svg>
 </body>
+
+<script>
+	
+</script>
+
 </html>
