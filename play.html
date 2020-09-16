@@ -9,26 +9,35 @@
 		#board {
 			height: 500px;
 		}
-		#board line {
-			stroke: black;
-		}
-		#board rect {
-			width: 10px;
-			height: 10px;
-			fill: transparent;
-		}
-		#board rect:hover {
-			fill: green;
-			cursor: pointer;
-		}
-		#board rect:active {
-			fill: darkgreen;
-		}
 	</style>
 </head>
 
 <body>
 	<svg id="board" viewBox="0 0 30 30">
+		<style>
+			line {
+				stroke: black;
+			}
+			rect {
+				width: 10px;
+				height: 10px;
+				fill: transparent;
+			}
+			rect:hover:not(.taken) {
+				fill: green;
+				cursor: pointer;
+			}
+			rect:active:not(.taken) {
+				fill: darkgreen;
+			}
+			circle {
+				fill: transparent;
+				stroke: black;
+			}
+			.hidden {
+				display: none;
+			}
+		</style>
 		<g>
 			<rect x="0"  y="0"/>
 			<rect x="10" y="0"/>
@@ -40,6 +49,33 @@
 			<rect x="10" y="20"/>
 			<rect x="20" y="20"/>
 		</g>
+		
+		<circle cx="4.75"  cy="4.75"  r="3" class="hidden"/>
+		<circle cx="15"    cy="4.75"  r="3" class="hidden"/>
+		<circle cx="25.25" cy="4.75"  r="3" class="hidden"/>
+		<circle cx="4.75"  cy="15"    r="3" class="hidden"/>
+		<circle cx="15"    cy="15"    r="3" class="hidden"/>
+		<circle cx="25.25" cy="15"    r="3" class="hidden"/>
+		<circle cx="4.75"  cy="25.25" r="3" class="hidden"/>
+		<circle cx="15"    cy="25.25" r="3" class="hidden"/>		
+		<circle cx="25.25" cy="25"    r="3" class="hidden"/>
+
+		<defs>
+			<g id="x">
+				<line x1="1.75" y1="1.75" x2="7.75" y2="7.75"/>
+				<line x1="7.75" y1="1.75" x2="1.75" y2="7.75"/>
+			</g>
+		</defs>
+		<use href="#x" class="hidden"/>
+		<use href="#x" class="hidden" x="10.25"/>
+		<use href="#x" class="hidden" x="20.5"/>
+		<use href="#x" class="hidden"           y="10.25"/>
+		<use href="#x" class="hidden" x="10.25" y="10.25"/>
+		<use href="#x" class="hidden" x="20.5"  y="10.25"/>
+		<use href="#x" class="hidden"           y="20.5"/>
+		<use href="#x" class="hidden" x="10.25" y="20.5"/>
+		<use href="#x" class="hidden" x="20.5"  y="20.5"/>
+
 		<line x1="10" y1="0" x2="10" y2="30"/>
 		<line x1="20" y1="0" x2="20" y2="30"/>
 		<line x1="0" y1="10" x2="30" y2="10"/>
@@ -50,9 +86,43 @@
 <script>
 	document.querySelector('#board g').addEventListener('click', do_move);
 	
+	let is_user_turn = true, // change this later
+		user_token = 'x', server_token = 'o', // this too
+		gamestate = Array(9).fill('_');
+	
+	gamestate[Symbol.toPrimitive] = () => gamestate.join('');
+
 	function do_move({ target }) {
+		if (!is_user_turn) return;
 		const num = [...target.parentElement.children].indexOf(target);
-		
+		gamestate[num] = user_token;
+		update_board(num, user_token);
+		is_user_turn = false;
+
+		const request = new XMLHttpRequest();
+		request.onreadystatechange = () => {
+			if (request.readyState === 4 && request.status === 200) {
+				gamestate[request.responseText] = server_token;
+				update_board(request.responseText, server_token);
+				is_user_turn = true;
+			}
+		};
+		request.open('GET', `/${user_token}/${gamestate}`);
+		request.send();
+	}
+	
+	function update_board(num, token) {
+		document.querySelector(
+			`#board rect:nth-of-type(${num + 1})`
+			).classList.add('taken');
+
+		document.querySelector(
+			`#board ${token === 'x' ? 'use' : 'circle'}:nth-of-type(${num + 1})`
+			).classList.remove('hidden');
+	}
+
+	function replace_at(str, char, position) {
+		return str.slice(0, position) + char + str.slice(position + 1);
 	}
 </script>
 
