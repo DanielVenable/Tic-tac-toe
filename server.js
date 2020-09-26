@@ -102,7 +102,7 @@ function get_winner(obj) {
 		else obj.score = obj.token === win ? -1 : 1;
 	}
 }
-winner('oxxoxxxoo');
+
 function winner(grid) {
 	for (let is_row = 0; is_row < 2; is_row++) {
 		let i, j;
