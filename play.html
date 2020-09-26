@@ -89,6 +89,7 @@
 
 	const squares = document.querySelector('#board g');
 	squares.addEventListener('click', do_move);
+	squares.addEventListener('touchend', do_move);
 
 	const win_text = document.getElementById('win');
 	
