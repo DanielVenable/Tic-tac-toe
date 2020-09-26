@@ -81,33 +81,62 @@
 		<line x1="0" y1="10" x2="30" y2="10"/>
 		<line x1="0" y1="20" x2="30" y2="20"/>
 	</svg>
+	<h1 id="win"></h2>
 </body>
 
 <script>
-	document.querySelector('#board g').addEventListener('click', do_move);
+	'use strict';
+
+	const squares = document.querySelector('#board g');
+	squares.addEventListener('click', do_move);
+
+	const win_text = document.getElementById('win');
 	
-	let is_user_turn = true, // change this later
+	let is_user_turn = Math.random() < 0.5, // change this later
 		user_token = 'x', server_token = 'o', // this too
 		gamestate = Array(9).fill('_');
 	
 	gamestate[Symbol.toPrimitive] = () => gamestate.join('');
 
+	const win_map = new Map([
+		[user_token, 'You win!'],
+		[server_token, 'I win!'],
+		['_', 'No one wins.']
+	]);
+
+	if (!is_user_turn) send_request();
+
 	function do_move({ target }) {
 		if (!is_user_turn) return;
 		const num = [...target.parentElement.children].indexOf(target);
+		if (gamestate[num] !== '_') return;
 		gamestate[num] = user_token;
 		update_board(num, user_token);
 		is_user_turn = false;
+		send_request();
+	}
 
+	function send_request() {
 		const request = new XMLHttpRequest();
+		request.responseType = 'json';
 		request.onreadystatechange = () => {
 			if (request.readyState === 4 && request.status === 200) {
-				gamestate[request.responseText] = server_token;
-				update_board(request.responseText, server_token);
-				is_user_turn = true;
+				if (request.response.grid) {
+					for (let i = 0; i < 9; i++) {
+						if (gamestate[i] !== request.response.grid[i]) {
+							gamestate[i] = request.response.grid[i];
+							update_board(i, server_token);
+							break;
+						}
+					}
+				}
+				
+				if (request.response.winner) {
+					win_text.innerText = win_map.get(request.response.winner);
+				} else is_user_turn = true;
 			}
 		};
-		request.open('GET', `/${user_token}/${gamestate}`);
+		request.open('GET', `/${server_token}/${gamestate}`);
 		request.send();
 	}
 	
@@ -121,9 +150,6 @@
 			).classList.remove('hidden');
 	}
 
-	function replace_at(str, char, position) {
-		return str.slice(0, position) + char + str.slice(position + 1);
-	}
 </script>
 
 </html>
